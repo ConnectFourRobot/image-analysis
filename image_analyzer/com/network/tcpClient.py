@@ -22,12 +22,12 @@ class TcpClient:
         self.__socket.send(message)
     
     def read(self) -> Message:
-        type: NetworkMessageType = NetworkMessageType(self.__socket.recv(1)[0])
-        size: int = 0
-        # Read messages will never have a payload and thus no size, maybe return error message if there is a size / payload?
-        #if size > 0:
-        #    return Error
-        return Message(type, size)
+        type: NetworkMessageType = NetworkMessageType(self.__socket.recv(1))
+        size: int = self.__socket.recv(1)
+        payload = None
+        if size > 0:
+            payload = self.__socket.recv(size)
+        return Message(type, size, payload)
     
     def __del__(self):
         self.__socket.close()
