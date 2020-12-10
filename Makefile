@@ -1,5 +1,5 @@
 
-MODULE := image-analyzer
+MODULE := image_analyzer
 
 init:
 	pip install -r requirements.txt
