@@ -11,7 +11,7 @@ Following packages are required before installing the service:
 ### Installation
 
 ````
-git clonegit@gitlab.oth-regensburg.de:giv31075/vgr-image-analysis.git
+git clone git@gitlab.oth-regensburg.de:giv31075/vgr-image-analysis.git
 cd vgr-image-analysis
 ./dev-tools/install.sh
 ````
