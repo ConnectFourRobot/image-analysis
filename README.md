@@ -16,7 +16,7 @@ cd vgr-image-analysis
 ./dev-tools/install.sh
 ````
 
-### Run development server
+### Run service
 
 ````
 ./dev-tools/run.sh
