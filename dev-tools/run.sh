@@ -23,7 +23,7 @@ if [ "$INVENV" = 0 ]; then
     source venv/bin/activate
 fi
 
-python -m image_analyzer 127.0.0.1 7777
+python -m image_analyzer "$@"
 
 if [ "$INVENV" = 0 ]; then
     echo "Stop virtual environment..."
