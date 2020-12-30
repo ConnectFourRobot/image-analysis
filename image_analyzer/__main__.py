@@ -5,18 +5,6 @@ from image_analyzer.com.network.tcpClient import TcpClient
 from image_analyzer.com.network.networkMessageType import NetworkMessageType
 from image_analyzer.com.message import Message
 
-# Sign up, Type 0, no payload | out
-# Ready, Type 1, no payload | out
-
-# Analyse Gameboard: type 2, no payload | in
-# Game situation: type 3, payload is array | out
-# Stop analysing: type 4, no payload | in
-# Robot turn: type 5, no payload | in
-# Player is interferring with Robot moving: type 6, no payload | out
-# Game over: type 7, no payload | in
-
-# Errors: types 254 descending
-
 # Set up argument parsing
 
 parser = argparse.ArgumentParser(description="Image Analysis Service")
@@ -40,28 +28,8 @@ def main():
     isRunning: bool = True
 
     while(isRunning == True):
-        # Check for incoming message
-        inc_message: Message = broker.read()
-        if inc_message.type == NetworkMessageType.RequestImage:
-            ## send array
-            dummy_array = np.zeros((6,7), dtype = np.uint8, order = 'C')
-            dummy_data = bytearray(dummy_array.data)
-            #broker.send(type = NetworkMessageType.AnswerImage, size = 98, payload = dummy_data)
-            out_msg: Message = Message(type = NetworkMessageType.AnswerImage, size = 98, payload = dummy_data)
-            broker.__socket.send(out_msg)
-        elif inc_message.type == NetworkMessageType.StopImage:
-            ## stop taking pictures
-            print("Not implemented yet.")
-        elif inc_message.type == NetworkMessageType.TurnRobot:
-            ## watch for human interaction, then send abort
-            #broker.send(type = NetworkMessageType.Unexpected, size = 0, payload = None)
-            out_msg: Message = Message(type = NetworkMessageType.Unexpected, size = 0, payload = None)
-            broker.__socket.send(out_msg)
-        elif inc_message.type == NetworkMessageType.GameOver:
-            ## game is over, exit while loop
-            isRunning == False
-        else:
-            continue
+        # Operation handling is done in this loop
+        isRunning == False
 
 if __name__ == '__main__':
     main()
