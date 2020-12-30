@@ -1,5 +1,6 @@
 from enum import Enum
 class NetworkMessageType(Enum):
+    Register = 0
     Ready = 1
     RequestImage = 2
     AnswerImage = 3
