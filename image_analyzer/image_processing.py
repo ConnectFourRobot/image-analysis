@@ -33,18 +33,16 @@ def getMask(image : np.ndarray, color : str) -> np.ndarray:
 def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
     # Get contours
     contours, _ = cv2.findContours(image = mask, mode = cv2.RETR_TREE, method = cv2.CHAIN_APPROX_SIMPLE)    # check if RETR_LIST is better or other methods
-                                                                                                                    # check if grayscale is better than mask
+                                                                                                            # check if grayscale is better than mask
 
     # Calculate biggest contour
     maxContourArea : np.uint16 = 0
-    maxContourCoords = (0, 0, 0, 0) # can this be removed?
     maxContourIndex : np.uint8 = 0
     for idx, cont in enumerate(contours):
         x, y, width, height = cv2.boundingRect(array = cont)
         area = width * height
         if area > maxContourArea:
             maxContourArea = area
-            maxContourCoords = x, y, width, height # can this be removed?
             maxContourIndex = idx
     
     # Check if contour is big enough to be the board
@@ -61,12 +59,9 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
     lines = cv2.HoughLines(image = contourImage, rho = 1, theta = np.pi / 180, threshold = 60)
     print("Number of Hough Lines: ", str(len(lines)))
 
-    # This can and needs to be optimized
+    # Calculate the coordinates of the found lines and append to list
     detectedLines : list = []
     for line in lines:
-        #(rho_1, theta_1, rho_2, theta_2) = line[0]  # error
-
-        # potential fix start
         (rho, theta) = line[0]
         a = np.cos(theta)
         b = np.sin(theta)
@@ -79,14 +74,6 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
 
         cv2.clipLine(imgRect = (0, 0, width, height), pt1 = (x1, y1), pt2 = (x2, y2))
         detectedLines.append(np.array([x1, y1, x2, y2]))
-        #detectedLines.append(np.array([rho, theta]))
-
-        #cv2.clipLine(imgRect = (0, 0, width, height), pt1 = polar2cart(rho = rho_1, theta = theta_1), pt2 = polar2cart(rho = rho_2, theta = theta_2))
-        #detectedLines.append(np.array([rho_1, theta_1, rho_2, theta_2]))
-
-        # potential fix end
-
-        #cv2.line(img = picture, pt1 = polar2cart(rho = rho_1, theta = theta_1), pt2 = polar2cart(rho = rho_2, theta = theta_2), color = (0, 255, 0), thickness = 3)
     
     print("There are: " + str(len(detectedLines)) + " detected Lines!")
 
@@ -106,28 +93,18 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
 
     return dst
 
-def getIntersection(line_1, line_2) -> tuple:
-    # # rho_1, theta_1 = line_1
-    # # rho_2, theta_2 = line_2
-    # # A = np.array([
-    # #                 [np.cos(theta_1), np.sin(theta_1)],
-    # #                 [np.cos(theta_2), np.sin(theta_2)]
-    # #             ])
-    # # b = np.array([rho_1, rho_2])
+def getIntersection(line_1 : tuple, line_2 : tuple) -> tuple:
+    # Get start and end points of each line
     x_1, y_1, x_2, y_2 = line_1
     x_3, y_3, x_4, y_4 = line_2
-    # A = np.array([[x_1, y_1], [x_2, y_2]])
-    # b = np.array([np.arccos(x_1), np.arccos(x_2)])
-    # x_0, y_0 = np.linalg.solve(A, b)
-    # #x_0, y_0 = int(np.round(x_0), int(np.round(y_0))) <- somehow does not work in one line
-    # x_0 = int(np.round(x_0))
-    # y_0 = int(np.round(y_0))
+
+    # Calculate coordinates of intersection, for formula check Line-line intersection
     p_x = ((x_1*y_2 - y_1 * x_2) * (x_3 - x_4) - (x_1 - x_2) * (x_3 * y_4 - y_3 * x_4)) / ((x_1 - x_2) * (y_3 - y_4) - (y_1 - y_2) * (x_3 - x_4))
     p_y = ((x_1*y_2 - y_1 * x_2) * (y_3 - y_4) - (y_1 - y_2) * (x_3 * y_4 - y_3 * x_4)) / ((x_1 - x_2) * (y_3 - y_4) - (y_1 - y_2) * (x_3 - x_4))
-    # return (x_0, y_0)
+
     return (p_x, p_y)
 
-def validPoint(point) -> bool:
+def validPoint(point : tuple) -> bool:
     return ((point[0] > 0) and (point[0] < 400)) and ((point[1] > 0) and (point[1] < 300))
 
 def getAveragePoint(points) -> tuple:
@@ -142,9 +119,7 @@ def getAveragePoint(points) -> tuple:
 
 def getCorners(lines):
     # Get all intersection points
-    #intersectionPoints : np.ndarray = np.array([], dtype = np.float32)
     intersectionPoints = []
-    # Can this be optimized?
     for i in range(0, len(lines)):
         for j in range(i+1, len(lines)):
             line1 = lines[i]
@@ -152,7 +127,6 @@ def getCorners(lines):
             point = getIntersection(line_1 = line1, line_2 = line2)
             # detect if out of bounds
             if validPoint(point):
-                #intersectionPoints = np.append(intersectionPoints, point)
                 intersectionPoints.append(point)
     print("Intersections detected: " + str(len(intersectionPoints)))
 
@@ -160,40 +134,36 @@ def getCorners(lines):
     averagePoint = getAveragePoint(points = intersectionPoints)
 
     # Corner Points
-    # This needs to be better
-    topLeftPoints = []#np.array([])
-    topRightPoints = []#np.array([])
-    bottomLeftPoints = []#np.array([])
-    bottomRightPoints = []#np.array([])
+    topLeftPoints = []
+    topRightPoints = []
+    bottomLeftPoints = []
+    bottomRightPoints = []
 
     # Append points to respective array
     for point in intersectionPoints:
         if point[0] < averagePoint[0]:
             if point[1] < averagePoint[1]:
-                topLeftPoints.append(point)# = np.append(topLeftPoints, point)
+                topLeftPoints.append(point)
             else:
-                bottomLeftPoints.append(point)# = np.append(bottomLeftPoints, point)
+                bottomLeftPoints.append(point)
         else:
             if point[1] < averagePoint[1]:
-                topRightPoints.append(point)# = np.append(topRightPoints, point)
+                topRightPoints.append(point)
             else:
-                bottomRightPoints.append(point)# = np.append(bottomRightPoints, point)
+                bottomRightPoints.append(point)
     
     # Check if enough corners are found
-    #if ((topLeftPoints.size == 0) or (topRightPoints.size == 0) or (bottomLeftPoints.size == 0) or (bottomRightPoints.size == 0)):
     if ((not topLeftPoints) or (not topRightPoints) or (not bottomLeftPoints) or (not bottomRightPoints)):
         print("Could not identify the corners of the board.")
         # Send error
-    
-    # corners = np.array(
-    #                     [getAveragePoint(points = topLeftPoints), getAveragePoint(points = topRightPoints), getAveragePoint(points = bottomLeftPoints), 
-    #                     getAveragePoint(points = bottomRightPoints)]
-    #                     )
 
+    # Distribute points to each respective corner
     topLeftPoints = list(topLeftPoints)
     topRightPoints = list(topRightPoints)
     bottomLeftPoints = list(bottomLeftPoints)
     bottomRightPoints = list(bottomRightPoints)
+
+    # Get average point in each corner
     corners = [
                 getAveragePoint(points = topLeftPoints), 
                 getAveragePoint(points = topRightPoints), 
@@ -203,10 +173,15 @@ def getCorners(lines):
 
     return corners
 
-def findTokens(sourceImage, tokenColor : str) -> list:
+def findTokens(sourceImage : np.ndarray, tokenColor : str) -> list:
+    # First convert to HSV colorspace
     sourceImageHSV : np.ndarray = cv2.cvtColor(src = sourceImage, code = cv2.COLOR_BGR2HSV)
+
+    # Create a mask of the respective color
     mask : np.ndarray = getMask(image = sourceImageHSV, color = tokenColor)
     cv2.imshow("token"+tokenColor, mask)
+
+    # Find contours and look for circles
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     minCircles : list = []
     for contour in contours:
@@ -217,9 +192,12 @@ def findTokens(sourceImage, tokenColor : str) -> list:
     return minCircles
 
 def getGameBoard(shape : tuple, redTokens : list, yellowTokens : list):
+    # Split game board into equal blocks
     boardHeight, boardWidth, _ = shape
     blockWidth = boardWidth / 7
     blockHeight = boardHeight / 6
+
+    # Generate empty grid and then check if insert token of respective color
     grid : np.ndarray = np.zeros(shape = (6, 7))
     for row in range(0, 6):
         for column in range(0, 7):
@@ -235,31 +213,31 @@ def getGameBoard(shape : tuple, redTokens : list, yellowTokens : list):
 
     return grid
 
-
+# Load picture, resize it, convert to HSV colorspace, get mask of color blue and finally transform to only the board
 picture : np.ndarray = cv2.imread(filename = "./pictures/test_1.jpg")
 picture : np.ndarray = cv2.resize(src = picture, dsize = (400, 300))            #should be dynamic in case of other ratio
 imag_hsv : np.ndarray = cv2.cvtColor(src = picture, code = cv2.COLOR_BGR2HSV)
 mask : np.ndarray = getMask(image = imag_hsv, color = "blue")
 projection = getProjection(image = picture, mask = mask)
 
+# Showing images
 cv2.imshow(winname = 'picture', mat = picture)
 cv2.imshow(winname = 'imag_hsv', mat = imag_hsv)
 cv2.imshow(winname = 'mask', mat = mask)
 cv2.imshow(winname = 'projection', mat = projection)
 
-# get red circles
-
+# Get red circles
 redTokens = findTokens(sourceImage = projection, tokenColor = "red")
 print("I found " + str(len(redTokens)) + " red tokens.")
 
-# get yellow circles
-
+# Get yellow circles
 yellowTokens = findTokens(sourceImage = projection, tokenColor = "yellow")
 print("I found " + str(len(yellowTokens)) + " yellow tokens.")
 
-# calculate token positions
+# Calculate token positions
 test = getGameBoard(shape = projection.shape, redTokens = redTokens, yellowTokens = yellowTokens)
 print(test)
 
+# Wait for input to end the display
 cv2.waitKey(0)
 cv2.destroyAllWindows()
