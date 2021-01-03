@@ -1,5 +1,6 @@
 import numpy as np
 import argparse
+import sys
 
 from image_analyzer.com.network.tcpClient import TcpClient
 from image_analyzer.com.network.networkMessageType import NetworkMessageType
@@ -20,6 +21,7 @@ def main():
     while(isRunning == True):
         # Operation handling is done in this loop
         isRunning == False
+        sys.exit()
 
 if __name__ == '__main__':
     # Set up argument parsing
