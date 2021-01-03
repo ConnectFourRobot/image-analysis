@@ -1,9 +1,9 @@
 from enum import Enum
 class NetworkMessageType(Enum):
-    Ready = 1
-    RequestImage = 2
-    AnswerImage = 3
-    StopImage = 4
-    TurnRobot = 5
-    Unexpected = 6
-    GameOver = 7
+    Register = 0
+    MakeImage = 1
+    SendImage = 2
+    StopAnalysis = 3
+    MonitorHumanInterference = 4
+    UnexpectedInterference = 5
+    GameOver = 6
