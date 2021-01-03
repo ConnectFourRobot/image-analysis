@@ -21,7 +21,7 @@ def main():
     while(isRunning == True):
         # Operation handling is done in this loop
         isRunning == False
-        sys.exit()
+        sys.exit(0)
 
 if __name__ == '__main__':
     # Set up argument parsing
