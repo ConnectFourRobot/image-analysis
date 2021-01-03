@@ -29,11 +29,28 @@ def analyseImage() -> bytearray:
 
 
 # 2 robot turn
-def detectHumanInteraction():
+def detectHumanInteraction() -> bool:
     # Take a picture
-    _camera = cv2.VideoCapture(0)
-    _referencePicture = _camera.read()
+    camera = cv2.VideoCapture(0)
+    referencePicture : np.ndarray = camera.read()
+    referencePicture : np.ndarray = cv2.resize(src = referencePicture, dsize = (400,300)) #make this dynamic, depending on camera resolution
 
-    # in a loop take new picture
+    # Take new picture and compare it
+    while(True):
+        # if messageType: StopAnalysis -> break
+        newPicture : np.ndarray = camera.read()
+        newPicture : np.ndarray = cv2.resize(src = newPicture, dsize = (400, 300))
 
-    # compare the two, if more than ~20% change: interrupt
+        totalPixels : np.uint16 = 400 * 300
+        unequal : np.uint16 = 0
+
+        # Compare first value of each pixel to speed up process of comparison
+        for x in range(0, 300):
+            for y in range(0, 400):
+                if (referencePicture[x][y][0] != newPicture[x][y][0]):
+                    unequal = unequal + 1
+        
+        # If more than 30% of the pixels are changed: send UnexpectedInterference message
+        if (((unequal / totalPixels) * 100) > 30):
+            # send messageType: UnexpectedInterference
+            return True
