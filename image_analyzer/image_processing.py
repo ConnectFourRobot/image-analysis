@@ -2,16 +2,6 @@ import cv2
 #from cv2 import cv2 # Visual Studio Code only, will be removed in final version
 import numpy as np
 
-# Code Vince:
-# Classes:  Color(Enum)
-#           Point 
-#           Circle                  containsPoint, 
-#           Line                    getIntersectionPoint und similarTheta 
-#           ConnectFourVision       getGridFromImage, calculateTokenPositions, findTokens, generateBoardProjection, performThresholdForColor, calculateBorderFromLines, 
-#                                   averagePoints
-
-# Load image, resize, mask with performThresholdForColor, generateBoardProjection, findtokens (red and yellow), calculateTokenPosition
-
 def polar2cart(rho, theta) -> tuple:
     x = rho * np.cos(theta)
     y = rho * np.sin(theta)
@@ -39,7 +29,7 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
     maxContourArea : np.uint16 = 0
     maxContourIndex : np.uint8 = 0
     for idx, cont in enumerate(contours):
-        x, y, width, height = cv2.boundingRect(array = cont)
+        _, _, width, height = cv2.boundingRect(array = cont)
         area = width * height
         if area > maxContourArea:
             maxContourArea = area
@@ -218,7 +208,7 @@ picture : np.ndarray = cv2.imread(filename = "./pictures/test_1.jpg")
 picture : np.ndarray = cv2.resize(src = picture, dsize = (400, 300))            #should be dynamic in case of other ratio
 imag_hsv : np.ndarray = cv2.cvtColor(src = picture, code = cv2.COLOR_BGR2HSV)
 mask : np.ndarray = getMask(image = imag_hsv, color = "blue")
-projection = getProjection(image = picture, mask = mask)
+projection : np.ndarray = getProjection(image = picture, mask = mask)
 
 # Showing images
 cv2.imshow(winname = 'picture', mat = picture)
@@ -227,11 +217,11 @@ cv2.imshow(winname = 'mask', mat = mask)
 cv2.imshow(winname = 'projection', mat = projection)
 
 # Get red circles
-redTokens = findTokens(sourceImage = projection, tokenColor = "red")
+redTokens : list = findTokens(sourceImage = projection, tokenColor = "red")
 print("I found " + str(len(redTokens)) + " red tokens.")
 
 # Get yellow circles
-yellowTokens = findTokens(sourceImage = projection, tokenColor = "yellow")
+yellowTokens : list = findTokens(sourceImage = projection, tokenColor = "yellow")
 print("I found " + str(len(yellowTokens)) + " yellow tokens.")
 
 # Calculate token positions
