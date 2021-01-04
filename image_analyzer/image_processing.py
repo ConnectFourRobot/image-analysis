@@ -194,11 +194,11 @@ def getGameBoard(shape : tuple, redTokens : list, yellowTokens : list):
             point : tuple = (column * blockWidth + blockWidth / 2, (6 - row - 1) * blockHeight + blockHeight / 2)
             for token in redTokens:
                 if np.power((point[0] - token[0]), 2) + np.power((point[1] - token[1]), 2) <= np.power(token[2], 2):
-                    grid[5 - row][column] = 1
+                    grid[5 - row][column] = 2
                     break
             for token in yellowTokens:
                 if np.power((point[0] - token[0]), 2) + np.power((point[1] - token[1]), 2) <= np.power(token[2], 2):
-                    grid[5 - row][column] = 2
+                    grid[5 - row][column] = 1
                     break
 
     return grid
