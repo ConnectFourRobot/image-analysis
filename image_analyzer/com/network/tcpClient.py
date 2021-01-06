@@ -1,5 +1,4 @@
 import socket
-import sys
 
 from image_analyzer.com.network.networkMessageType import NetworkMessageType
 from image_analyzer.com.message import Message
@@ -15,11 +14,11 @@ class TcpClient:
         # Size of payload
         size: int = 0
         if payload is not None:
-            size = sys.getsizeof(payload)
+            size = len(payload)
         message = bytearray([messageType.value, size])
         if payload is not None:
             message.extend(payload)
-        self.__socket.send(message)
+        self.__socket.sendall(message)
     
     def read(self) -> Message:
         messageType: NetworkMessageType = NetworkMessageType(self.__socket.recv(1))
