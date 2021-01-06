@@ -1,0 +1,6 @@
+argparse
+cv2
+enum
+numpy
+socket
+sys
