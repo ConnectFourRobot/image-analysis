@@ -8,9 +8,9 @@ def polar2cart(rho, theta) -> tuple:
     return (x, y)
 
 colorThresholds : dict = {
-                "blue" : [np.array([111, 50, 147]), np.array([132, 205, 255])],
-                "red" : [np.array([131, 39, 145]), np.array([179, 170, 255])],
-                "yellow" : [np.array([17, 58, 63]), np.array([40, 242, 253])]
+                "blue" : [np.array([93, 90, 33]), np.array([141, 255, 222])],
+                "red" : [np.array([0, 73, 159]), np.array([10, 204, 253])],
+                "yellow" : [np.array([17, 58, 63]), np.array([40, 242, 255])]
                 }
 
 def getMask(image : np.ndarray, color : str) -> np.ndarray:
@@ -62,7 +62,7 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
         x2 = int(x0 - 1000*(-b))
         y2 = int(y0 - 1000*(a))
 
-        cv2.clipLine(imgRect = (0, 0, width, height), pt1 = (x1, y1), pt2 = (x2, y2))
+        _, (x1, y1), (x2, y2) = cv2.clipLine(imgRect = (0, 0, width, height), pt1 = (x1, y1), pt2 = (x2, y2))
         detectedLines.append(np.array([x1, y1, x2, y2]))
     
     print("There are: " + str(len(detectedLines)) + " detected Lines!")
@@ -79,23 +79,37 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
     cornersPicture = np.float32(cornersPicture[:,np.newaxis,:]) # new dimension needed for opencv2 functions
 
     transform = cv2.getPerspectiveTransform(src = np.float32(corners), dst = cornersPicture)
-    dst = cv2.warpPerspective(src = picture, M = transform, dsize = (width, height))
+    dst = cv2.warpPerspective(src = image, M = transform, dsize = (width, height))
 
     return dst
 
-def getIntersection(line_1 : tuple, line_2 : tuple) -> tuple:
+def getIntersection(line_1 : tuple, line_2 : tuple):# -> tuple:
     # Get start and end points of each line
     x_1, y_1, x_2, y_2 = line_1
     x_3, y_3, x_4, y_4 = line_2
 
-    # Calculate coordinates of intersection, for formula check Line-line intersection
-    p_x = ((x_1*y_2 - y_1 * x_2) * (x_3 - x_4) - (x_1 - x_2) * (x_3 * y_4 - y_3 * x_4)) / ((x_1 - x_2) * (y_3 - y_4) - (y_1 - y_2) * (x_3 - x_4))
-    p_y = ((x_1*y_2 - y_1 * x_2) * (y_3 - y_4) - (y_1 - y_2) * (x_3 * y_4 - y_3 * x_4)) / ((x_1 - x_2) * (y_3 - y_4) - (y_1 - y_2) * (x_3 - x_4))
+    denominator = ((x_1 - x_2) * (y_3 - y_4) - (y_1 - y_2) * (x_3 - x_4))
 
-    return (p_x, p_y)
+    if -0.1 < denominator < 0.1:
+        return False
+    else:
+        # Calculate coordinates of intersection, for formula check Line-line intersection
+        p_x = ((x_1*y_2 - y_1 * x_2) * (x_3 - x_4) - (x_1 - x_2) * (x_3 * y_4 - y_3 * x_4)) / denominator
+        p_y = ((x_1*y_2 - y_1 * x_2) * (y_3 - y_4) - (y_1 - y_2) * (x_3 * y_4 - y_3 * x_4)) / denominator
+
+        return (p_x, p_y)
+
+# angle = acos(v1•v2)
+def validTheta(line1, line2) -> bool:
+    theta = np.arccos(np.dot(normalizeVector(np.array((line1[2] - line1[0], line1[3] - line1[1]), dtype=np.int16)), normalizeVector(np.array((line2[2] - line2[0], line2[3] - line2[1]), dtype=np.int16))))
+    return (np.pi/3 < theta < (3*np.pi)/4) or (5*np.pi/4 < theta < 5*np.pi/3) # noch Umrechnen
+
+def normalizeVector(v):
+    return v/np.linalg.norm(v)
 
 def validPoint(point : tuple) -> bool:
-    return ((point[0] > 0) and (point[0] < 400)) and ((point[1] > 0) and (point[1] < 300))
+    #return ((point[0] > 0) and (point[0] < 400)) and ((point[1] > 0) and (point[1] < 300))
+    return ((0 < point[0] < 400) and (0 < point[1] < 300))
 
 def getAveragePoint(points) -> tuple:
     x = 0
@@ -103,8 +117,8 @@ def getAveragePoint(points) -> tuple:
     for point in points:
         x = x + float(point[0])
         y = y + float(point[1])
-    x = x / len(points)
-    y = y / len(points)
+    x = int(x / len(points))
+    y = int(y / len(points))
     return (x, y)
 
 def getCorners(lines):
@@ -114,10 +128,12 @@ def getCorners(lines):
         for j in range(i+1, len(lines)):
             line1 = lines[i]
             line2 = lines[j]
-            point = getIntersection(line_1 = line1, line_2 = line2)
-            # detect if out of bounds
-            if validPoint(point):
-                intersectionPoints.append(point)
+            if validTheta(line1, line2): 
+                point = getIntersection(line_1 = line1, line_2 = line2)
+                # detect if out of bounds
+                if (point and validPoint(point)):
+                    #if validPoint(point):
+                    intersectionPoints.append(point)
     print("Intersections detected: " + str(len(intersectionPoints)))
 
     # Get average point in between all intersections
