@@ -21,8 +21,8 @@ class TcpClient:
         self.__socket.sendall(message)
     
     def read(self) -> Message:
-        messageType: NetworkMessageType = NetworkMessageType(self.__socket.recv(1))
-        size: int = self.__socket.recv(1)
+        messageType: NetworkMessageType = NetworkMessageType(self.__socket.recv(1)[0])
+        size: int = self.__socket.recv(1)[0]
         payload = None
         if size > 0:
             payload = self.__socket.recv(size)
