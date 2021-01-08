@@ -12,7 +12,7 @@ def main(args):
     broker : TcpClient = TcpClient(address=args.ip, port=args.port)
 
     # Register with broker
-    broker.send(messageType = NetworkMessageType.Register, payload = None)
+    broker.send(messageType = NetworkMessageType.Register, payload = bytearray([23]))
 
     isRunning: bool = True
 
