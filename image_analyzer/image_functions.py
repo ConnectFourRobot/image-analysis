@@ -1,7 +1,7 @@
 import cv2
 #from cv2 import cv2 # Visual Studio Code only, will be removed in final version
 import numpy as np
-from image_processing import colorThresholds, findTokens, getGameBoard, getMask, getProjection
+from image_analyzer.image_processing import colorThresholds, findTokens, getGameBoard, getMask, getProjection
 
 # Handle all function calls in this file
 
