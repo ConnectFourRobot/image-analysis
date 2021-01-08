@@ -205,7 +205,8 @@ def getGameBoard(shape : tuple, redTokens : list, yellowTokens : list):
 
 # Load picture, resize it, convert to HSV colorspace, get mask of color blue and finally transform to only the board
 #picture : np.ndarray = cv2.imread(filename = "./pictures/test_1.jpg")
-picture : np.ndarray = cv2.VideoCapture(0)
+cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+_, picture = cam.read()
 picture : np.ndarray = cv2.resize(src = picture, dsize = (400, 300))            #should be dynamic in case of other ratio
 imag_hsv : np.ndarray = cv2.cvtColor(src = picture, code = cv2.COLOR_BGR2HSV)
 mask : np.ndarray = getMask(image = imag_hsv, color = "blue")
