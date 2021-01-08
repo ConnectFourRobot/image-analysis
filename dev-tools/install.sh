@@ -12,7 +12,7 @@ else
     INVENV=0
 fi
 
-if [ ! -x "$(command -v python3.8)" ]; then
+if [ ! -x "$(command -v python3.9)" ]; then
     echo "Python3.8 is not installed. Please install it manually and run this script again." >&2
     exit 1
 fi
