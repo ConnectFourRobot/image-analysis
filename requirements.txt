@@ -1,6 +1,3 @@
 argparse
-cv2
-enum
+opencv-contrib-python
 numpy
-socket
-sys
