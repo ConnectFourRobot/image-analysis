@@ -7,3 +7,4 @@ class NetworkMessageType(Enum):
     MonitorHumanInterference = 4
     UnexpectedInterference = 5
     GameOver = 6
+    Error = 254
