@@ -68,7 +68,7 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
                                 (width, height)
                             ])
     
-    cornersPicture = np.float32(cornersPicture[:,np.newaxis,:]) # new dimension needed for opencv2 functions
+    cornersPicture = np.float32(cornersPicture[:,np.newaxis,:]) # New dimension needed for opencv2 functions
 
     transform = cv2.getPerspectiveTransform(src = np.float32(corners), dst = cornersPicture)
     dst = cv2.warpPerspective(src = image, M = transform, dsize = (width, height))
@@ -208,34 +208,3 @@ def getGameBoard(shape : tuple, redTokens : list, yellowTokens : list):
                     break
 
     return grid
-
-# # Load picture, resize it, convert to HSV colorspace, get mask of color blue and finally transform to only the board
-# #picture : np.ndarray = cv2.imread(filename = "./pictures/test_1.jpg")
-# cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-# _, picture = cam.read()
-# picture : np.ndarray = cv2.resize(src = picture, dsize = (400, 300))            #should be dynamic in case of other ratio
-# imag_hsv : np.ndarray = cv2.cvtColor(src = picture, code = cv2.COLOR_BGR2HSV)
-# mask : np.ndarray = getMask(image = imag_hsv, color = "blue")
-# projection : np.ndarray = getProjection(image = picture, mask = mask)
-
-# # Showing images
-# cv2.imshow(winname = 'picture', mat = picture)
-# cv2.imshow(winname = 'imag_hsv', mat = imag_hsv)
-# cv2.imshow(winname = 'mask', mat = mask)
-# cv2.imshow(winname = 'projection', mat = projection)
-
-# # Get red circles
-# redTokens : list = findTokens(sourceImage = projection, tokenColor = "red")
-# print("I found " + str(len(redTokens)) + " red tokens.")
-
-# # Get yellow circles
-# yellowTokens : list = findTokens(sourceImage = projection, tokenColor = "yellow")
-# print("I found " + str(len(yellowTokens)) + " yellow tokens.")
-
-# # Calculate token positions
-# test = getGameBoard(shape = projection.shape, redTokens = redTokens, yellowTokens = yellowTokens)
-# print(test)
-
-# # Wait for input to end the display
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
