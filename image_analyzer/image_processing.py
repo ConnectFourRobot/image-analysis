@@ -2,11 +2,6 @@ import cv2
 #from cv2 import cv2 # Visual Studio Code only, will be removed in final version
 import numpy as np
 
-def polar2cart(rho, theta) -> tuple:
-    x = rho * np.cos(theta)
-    y = rho * np.sin(theta)
-    return (x, y)
-
 colorThresholds : dict = {
                 "blue" : [np.array([93, 90, 33]), np.array([141, 255, 222])],
                 "red" : [np.array([0, 73, 159]), np.array([10, 204, 253])],
