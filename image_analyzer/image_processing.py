@@ -100,8 +100,7 @@ def normalizeVector(v):
     return v/np.linalg.norm(v)
 
 def validPoint(point : tuple) -> bool:
-    #return ((point[0] > 0) and (point[0] < 400)) and ((point[1] > 0) and (point[1] < 300))
-    return ((0 < point[0] < 400) and (0 < point[1] < 300))
+    return ((0 <= point[0] <= 400) and (0 <= point[1] <= 300))
 
 def getAveragePoint(points) -> tuple:
     x = 0
