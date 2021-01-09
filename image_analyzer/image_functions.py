@@ -13,7 +13,7 @@ def analyseImage() -> bytearray:
     camera.release()
 
     # Resize, colorshift, mask and project image
-    picture : np.ndarray = cv2.resize(src = picture, dsize = (400,300)) #make this dynamic, depending on camera resolution
+    picture : np.ndarray = cv2.resize(src = picture, dsize = (400,300))
     picture_hsv : np.ndarray = cv2.cvtColor(src = picture, code = cv2.COLOR_BGR2HSV)
     mask : np.ndarray = getMask(image = picture_hsv, color = "blue")
     projection : np.ndarray = getProjection(image = picture, mask = mask)
@@ -33,7 +33,7 @@ def detectHumanInteraction() -> bool:
     # Take a picture
     camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     _, referencePicture = camera.read()
-    referencePicture : np.ndarray = cv2.resize(src = referencePicture, dsize = (400,300)) #make this dynamic, depending on camera resolution
+    referencePicture : np.ndarray = cv2.resize(src = referencePicture, dsize = (400,300))
 
     # Take new picture and compare it
     while(True):
