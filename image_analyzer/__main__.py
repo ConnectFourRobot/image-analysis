@@ -22,7 +22,7 @@ def main(args):
         if incomingMessage.messageType == NetworkMessageType.MakeImage:
             payload : bytearray = analyseImage()
             broker.send(messageType = NetworkMessageType.SendImage, payload = payload)
-        elif incomingMessage.messageType == NetworkMessageType.MonitorHumanInterference:
+        elif incomingMessage.messageType == NetworkMessageType.MonitorHumanInterference and args.hid:
             # Perform function until broker tells IA to stop
             while(broker.read().messageType != NetworkMessageType.StopAnalysis):
                 # Check if change in picture is bigger than treshold
@@ -43,9 +43,11 @@ if __name__ == '__main__':
     # Set up argument parsing
 
     parser = argparse.ArgumentParser(description="Image Analysis Service")
-    parser.add_argument("--height", "-H", dest="height", type=int, help="Height of the Connect Four board (int).", default=6)  # stores value in args.height
-    parser.add_argument("--width", "-W", dest="width", type=int, help="Width of the Connect Four board (int).", default=7)     # stores value in args.width
-    parser.add_argument("--ip", "-i", dest="ip", type=str, help="Target ip address (str).", default="127.0.0.1")               # stores value in args.ip
-    parser.add_argument("--port", "-p", dest="port", type=int, help="Target port (int).", default=7777)                        # stores value in args.port
+    parser.add_argument("--height", "-H", dest="height", type=int, help="Height of the Connect Four board (int). Default value is 6.", default=6)  # stores value in args.height
+    parser.add_argument("--width", "-W", dest="width", type=int, help="Width of the Connect Four board (int). Default value is 7.", default=7)     # stores value in args.width
+    parser.add_argument("--ip", "-i", dest="ip", type=str, help="Target ip address (str). Default ip is 127.0.0.1.", default="127.0.0.1")          # stores value in args.ip
+    parser.add_argument("--port", "-p", dest="port", type=int, help="Target port (int). Default port is 7777.", default=7777)                      # stores value in args.port
+    parser.add_argument("--human-interaction-detection", "-hid", dest="hid", type=bool, 
+                        help="Toggle the human interaction detection (bool). Default is True.", default=True)                                      # stores value in args.hid
 
     main(parser.parse_args())
