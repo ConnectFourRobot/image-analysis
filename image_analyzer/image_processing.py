@@ -42,7 +42,6 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
 
     # Get lines through HoughTransformation
     lines = cv2.HoughLines(image = contourImage, rho = 1, theta = np.pi / 180, threshold = 60)
-    print("Number of Hough Lines: ", str(len(lines)))
 
     # Calculate the coordinates of the found lines and append to list
     detectedLines : list = []
@@ -59,8 +58,6 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
 
         _, (x1, y1), (x2, y2) = cv2.clipLine(imgRect = (0, 0, width, height), pt1 = (x1, y1), pt2 = (x2, y2))
         detectedLines.append(np.array([x1, y1, x2, y2]))
-    
-    print("There are: " + str(len(detectedLines)) + " detected Lines!")
 
     # Call to calculateBorderFromLines, just below
     corners = getCorners(lines = detectedLines)
@@ -129,7 +126,6 @@ def getCorners(lines):
                 if (point and validPoint(point)):
                     #if validPoint(point):
                     intersectionPoints.append(point)
-    print("Intersections detected: " + str(len(intersectionPoints)))
 
     # Get average point in between all intersections
     averagePoint = getAveragePoint(points = intersectionPoints)
