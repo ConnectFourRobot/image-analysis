@@ -21,11 +21,11 @@ def main(args):
         incomingMessage : Message = broker.read()
         if incomingMessage.messageType == NetworkMessageType.MakeImage:
             for _ in range(10):
-            payload : bytearray = analyseImage()
+                payload : bytearray = analyseImage()
                 if type(payload) == bool and not payload:
                     continue
                 else:
-            broker.send(messageType = NetworkMessageType.SendImage, payload = payload)
+                    broker.send(messageType = NetworkMessageType.SendImage, payload = payload)
                     break
             # Send Error after 10 tries
             broker.send(messageType = NetworkMessageType.Error, payload = bytearray([]))
@@ -35,7 +35,7 @@ def main(args):
                 # Check if change in picture is bigger than treshold
                 if detectHumanInteraction:
                     # Send message to broker
-                    broker.send(messageType = NetworkMessageType.UnexpectedInterference, payload = None)
+                    broker.send(messageType = NetworkMessageType.UnexpectedInterference, payload = bytearray([]))
                 else:
                     continue
         elif incomingMessage.messageType == NetworkMessageType.GameOver:
