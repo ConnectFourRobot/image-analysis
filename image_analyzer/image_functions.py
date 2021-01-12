@@ -12,12 +12,26 @@ def analyseImage() -> bytearray:
     _, picture = camera.read()
     camera.release()
 
+    # Return to main if picture is empty
+    if picture.empty():
+        # Log for empty picture
+        return False
+
     # Resize, colorshift, mask and project image
     picture : np.ndarray = cv2.resize(src = picture, dsize = (400,300))
     picture_hsv : np.ndarray = cv2.cvtColor(src = picture, code = cv2.COLOR_BGR2HSV)
     mask : np.ndarray = getMask(image = picture_hsv, color = "blue")
+
+    if type(mask) == bool and not mask:
+        # Log for mask error (color not found)
+        return False
+
     projection : np.ndarray = getProjection(image = picture, mask = mask)
-    
+
+    if type(projection) == bool and not projection:
+        # Log for projection error
+        return False
+
     # Calculate game tokens
     redTokens : list = findTokens(sourceImage = projection, tokenColor = "red")
     yellowTokens : list = findTokens(sourceImage = projection, tokenColor = "yellow")
