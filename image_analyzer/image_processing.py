@@ -12,13 +12,16 @@ def getMask(image : np.ndarray, color : str) -> np.ndarray:
     if color in colorThresholds.keys():
         return cv2.inRange(src = image, lowerb = colorThresholds[color][0], upperb = colorThresholds[color][1])
     else:
-        print("Fail")
-        return np.zeros_like(image) # discuss this corner case
+        return False
 
 def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
     # Get contours
     contours, _ = cv2.findContours(image = mask, mode = cv2.RETR_TREE, method = cv2.CHAIN_APPROX_SIMPLE)    # check if RETR_LIST is better or other methods
                                                                                                             # check if grayscale is better than mask
+
+    if contours.empty():
+        # Log for no contours found
+        return False
 
     # Calculate biggest contour
     maxContourArea : np.uint16 = 0
@@ -34,7 +37,8 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
     height, width = mask.shape
     percentage = maxContourArea / (width * height) * 100
     if percentage < 20:                             #needs to be tested "better"
-        print("Too small to be the board")
+        # Log for board not found
+        return False
     
     # Get a blank image with only the contours
     contourImage = np.zeros_like(a = mask, dtype = np.uint8)
@@ -42,6 +46,10 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
 
     # Get lines through HoughTransformation
     lines = cv2.HoughLines(image = contourImage, rho = 1, theta = np.pi / 180, threshold = 60)
+
+    if lines.empty():
+        # Log for no HoughLines found
+        return False
 
     # Calculate the coordinates of the found lines and append to list
     detectedLines : list = []
@@ -61,6 +69,11 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
 
     # Call to calculateBorderFromLines, just below
     corners = getCorners(lines = detectedLines)
+
+    if not corners:
+        # Log not enough corners found
+        return False
+
     cornersPicture = np.array([
                                 (0, 0), 
                                 (width, 0), 
@@ -150,8 +163,8 @@ def getCorners(lines):
     
     # Check if enough corners are found
     if ((not topLeftPoints) or (not topRightPoints) or (not bottomLeftPoints) or (not bottomRightPoints)):
-        print("Could not identify the corners of the board.")
-        # Send error
+        # Log not enough corners found
+        return False
 
     # Distribute points to each respective corner
     topLeftPoints = list(topLeftPoints)
