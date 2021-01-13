@@ -207,7 +207,7 @@ def getGameBoard(shape : tuple, redTokens : list, yellowTokens : list):
     blockHeight = boardHeight / 6
 
     # Generate empty grid and then check if insert token of respective color
-    grid : np.ndarray = np.zeros(shape = (6, 7))
+    grid : np.ndarray = np.zeros(shape = (6, 7), dtype = np.int8)
     for row in range(0, 6):
         for column in range(0, 7):
             point : tuple = (column * blockWidth + blockWidth / 2, (6 - row - 1) * blockHeight + blockHeight / 2)
