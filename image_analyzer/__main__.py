@@ -40,10 +40,12 @@ def main(args):
             if not successFlag:
             broker.send(messageType = NetworkMessageType.Error, payload = None)
         elif incomingMessage.messageType == NetworkMessageType.MonitorHumanInterference and args.hid:
+            # Make the reference picture
+            referencePicture = getPicture(cameraID = cameraID)
             # Perform function until broker tells IA to stop
             while(broker.read().messageType != NetworkMessageType.StopAnalysis):
                 # Check if change in picture is bigger than treshold
-                if detectHumanInteraction(cameraID = cameraID):
+                if detectHumanInteraction(referencePicture = referencePicture, cameraID = cameraID):
                     # Send message to broker
                     broker.send(messageType = NetworkMessageType.UnexpectedInterference, payload = None)
                 else:
