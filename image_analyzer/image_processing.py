@@ -106,7 +106,7 @@ def getIntersection(line_1 : tuple, line_2 : tuple):# -> tuple:
 
 # angle = acos(v1•v2)
 def validTheta(line1, line2) -> bool:
-    theta = np.arccos(np.dot(normalizeVector(np.array((line1[2] - line1[0], line1[3] - line1[1]), dtype=np.int16)), normalizeVector(np.array((line2[2] - line2[0], line2[3] - line2[1]), dtype=np.int16))))
+    theta = np.arccos(np.around(np.dot(normalizeVector(np.array((line1[2] - line1[0], line1[3] - line1[1]), dtype=np.int16)), normalizeVector(np.array((line2[2] - line2[0], line2[3] - line2[1]), dtype=np.int16)))), decimals = 2)
     return (np.pi/3 < theta < (3*np.pi)/4) or (5*np.pi/4 < theta < 5*np.pi/3) # noch Umrechnen
 
 def normalizeVector(v):
