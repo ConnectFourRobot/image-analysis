@@ -1,6 +1,7 @@
 import numpy as np
 import argparse
 import sys
+import time
 
 from image_analyzer.image_functions import analyseImage, cameraCheck, detectHumanInteraction, getPicture
 from image_analyzer.com.network.tcpClient import TcpClient
@@ -38,7 +39,7 @@ def main(args):
                     break
             # Send Error after 10 tries
             if not successFlag:
-            broker.send(messageType = NetworkMessageType.Error, payload = None)
+                broker.send(messageType = NetworkMessageType.Error, payload = None)
         elif incomingMessage.messageType == NetworkMessageType.MonitorHumanInterference and args.hid:
             # Make the reference picture
             referencePicture = getPicture(cameraID = cameraID)
@@ -49,6 +50,7 @@ def main(args):
                     # Send message to broker
                     broker.send(messageType = NetworkMessageType.UnexpectedInterference, payload = None)
                 else:
+                    time.sleep(secs = 0.5)
                     continue
         elif incomingMessage.messageType == NetworkMessageType.GameOver:
             isRunning == False
