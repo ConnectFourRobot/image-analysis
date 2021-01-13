@@ -19,7 +19,7 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
     contours, _ = cv2.findContours(image = mask, mode = cv2.RETR_TREE, method = cv2.CHAIN_APPROX_SIMPLE)    # check if RETR_LIST is better or other methods
                                                                                                             # check if grayscale is better than mask
 
-    if contours.empty():
+    if not contours:
         # Log for no contours found
         return False
 
@@ -47,7 +47,7 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
     # Get lines through HoughTransformation
     lines = cv2.HoughLines(image = contourImage, rho = 1, theta = np.pi / 180, threshold = 60)
 
-    if lines.empty():
+    if lines.size == 0:
         # Log for no HoughLines found
         return False
 
@@ -138,6 +138,9 @@ def getCorners(lines):
                 if (point and validPoint(point)):
                     #if validPoint(point):
                     intersectionPoints.append(point)
+    if not intersectionPoints:
+        # Log for no intersections found
+        return False
 
     # Get average point in between all intersections
     averagePoint = getAveragePoint(points = intersectionPoints)
@@ -188,7 +191,6 @@ def findTokens(sourceImage : np.ndarray, tokenColor : str) -> list:
 
     # Create a mask of the respective color
     mask : np.ndarray = getMask(image = sourceImageHSV, color = tokenColor)
-    cv2.imshow("token"+tokenColor, mask)
 
     # Find contours and look for circles
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
