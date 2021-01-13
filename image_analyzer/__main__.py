@@ -27,14 +27,17 @@ def main(args):
         # Check for incoming message
         incomingMessage : Message = broker.read()
         if incomingMessage.messageType == NetworkMessageType.MakeImage:
+            successFlag : bool = False
             for _ in range(10):
                 payload : bytearray = analyseImage(cameraID = cameraID)
                 if type(payload) == bool and not payload:
                     continue
                 else:
                     broker.send(messageType = NetworkMessageType.SendImage, payload = payload)
+                    successFlag = True
                     break
             # Send Error after 10 tries
+            if not successFlag:
             broker.send(messageType = NetworkMessageType.Error, payload = None)
         elif incomingMessage.messageType == NetworkMessageType.MonitorHumanInterference and args.hid:
             # Perform function until broker tells IA to stop
