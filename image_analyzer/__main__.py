@@ -20,7 +20,7 @@ def main(args):
     cameraID = cameraCheck()
     if type(cameraID) == bool and not cameraID:
         # Log for no open camera found
-        broker.send(messageType = NetworkMessageType.NoCameraFound, payload = bytearray([]))
+        broker.send(messageType = NetworkMessageType.NoCameraFound, payload = None)
         sys.exit()
 
     while(isRunning == True):
@@ -35,14 +35,14 @@ def main(args):
                     broker.send(messageType = NetworkMessageType.SendImage, payload = payload)
                     break
             # Send Error after 10 tries
-            broker.send(messageType = NetworkMessageType.Error, payload = bytearray([]))
+            broker.send(messageType = NetworkMessageType.Error, payload = None)
         elif incomingMessage.messageType == NetworkMessageType.MonitorHumanInterference and args.hid:
             # Perform function until broker tells IA to stop
             while(broker.read().messageType != NetworkMessageType.StopAnalysis):
                 # Check if change in picture is bigger than treshold
                 if detectHumanInteraction(cameraID = cameraID):
                     # Send message to broker
-                    broker.send(messageType = NetworkMessageType.UnexpectedInterference, payload = bytearray([]))
+                    broker.send(messageType = NetworkMessageType.UnexpectedInterference, payload = None)
                 else:
                     continue
         elif incomingMessage.messageType == NetworkMessageType.GameOver:
