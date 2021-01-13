@@ -25,7 +25,7 @@ def analyseImage(cameraID : int) -> bytearray:
     camera.release()
 
     # Return to main if picture is empty
-    if picture.empty():
+    if picture is None:
         # Log for empty picture
         return False
 
