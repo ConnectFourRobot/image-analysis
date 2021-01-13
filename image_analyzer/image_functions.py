@@ -5,10 +5,22 @@ from image_analyzer.image_processing import colorThresholds, findTokens, getGame
 
 # Handle all function calls in this file
 
+# 0 Check for open camera
+def cameraCheck() -> int:
+    for x in range(10):
+        camera = cv2.VideoCapture(x, cv2.CAP_DSHOW)
+        if camera is None or not camera.isOpened():
+            continue
+        elif camera.isOpened():
+            return x
+        else:
+            return False
+
+
 # 1 complete process as in image_processing
-def analyseImage() -> bytearray:
+def analyseImage(cameraID : int) -> bytearray:
     # Create camera object and get a picture
-    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    camera = cv2.VideoCapture(cameraID, cv2.CAP_DSHOW)
     _, picture = camera.read()
     camera.release()
 
@@ -43,9 +55,9 @@ def analyseImage() -> bytearray:
 
 
 # 2 robot turn
-def detectHumanInteraction() -> bool:
+def detectHumanInteraction(cameraID : int) -> bool:
     # Take a picture
-    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    camera = cv2.VideoCapture(cameraID, cv2.CAP_DSHOW)
     _, referencePicture = camera.read()
     referencePicture : np.ndarray = cv2.resize(src = referencePicture, dsize = (400,300))
 

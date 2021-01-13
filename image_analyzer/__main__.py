@@ -2,7 +2,7 @@ import numpy as np
 import argparse
 import sys
 
-from image_analyzer.image_functions import analyseImage, detectHumanInteraction
+from image_analyzer.image_functions import analyseImage, cameraCheck, detectHumanInteraction
 from image_analyzer.com.network.tcpClient import TcpClient
 from image_analyzer.com.network.networkMessageType import NetworkMessageType
 from image_analyzer.com.message import Message
@@ -16,12 +16,19 @@ def main(args):
 
     isRunning: bool = True
 
+    # Check for open cameras
+    cameraID = cameraCheck()
+    if type(cameraID) == bool and not cameraID:
+        # Log for no open camera found
+        broker.send(messageType = NetworkMessageType.NoCameraFound, payload = bytearray([]))
+        sys.exit()
+
     while(isRunning == True):
         # Check for incoming message
         incomingMessage : Message = broker.read()
         if incomingMessage.messageType == NetworkMessageType.MakeImage:
             for _ in range(10):
-                payload : bytearray = analyseImage()
+                payload : bytearray = analyseImage(cameraID = cameraID)
                 if type(payload) == bool and not payload:
                     continue
                 else:
@@ -33,7 +40,7 @@ def main(args):
             # Perform function until broker tells IA to stop
             while(broker.read().messageType != NetworkMessageType.StopAnalysis):
                 # Check if change in picture is bigger than treshold
-                if detectHumanInteraction:
+                if detectHumanInteraction(cameraID = cameraID):
                     # Send message to broker
                     broker.send(messageType = NetworkMessageType.UnexpectedInterference, payload = bytearray([]))
                 else:
