@@ -2,7 +2,7 @@ import numpy as np
 import argparse
 import sys
 
-from image_analyzer.image_functions import analyseImage, cameraCheck, detectHumanInteraction
+from image_analyzer.image_functions import analyseImage, cameraCheck, detectHumanInteraction, getPicture
 from image_analyzer.com.network.tcpClient import TcpClient
 from image_analyzer.com.network.networkMessageType import NetworkMessageType
 from image_analyzer.com.message import Message
