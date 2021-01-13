@@ -16,13 +16,19 @@ def cameraCheck() -> int:
         else:
             return False
 
-
-# 1 complete process as in image_processing
-def analyseImage(cameraID : int) -> bytearray:
-    # Create camera object and get a picture
+# 1 Get picture
+def getPicture(cameraID : int) -> np.ndarray:
     camera = cv2.VideoCapture(cameraID, cv2.CAP_DSHOW)
+    camera.open(cameraID)
     _, picture = camera.read()
     camera.release()
+
+    return picture
+
+# 2 complete process as in image_processing
+def analyseImage(cameraID : int) -> bytearray:
+    # Get picture
+    picture = getPicture(cameraID = cameraID)
 
     # Return to main if picture is empty
     if picture is None:
@@ -54,24 +60,18 @@ def analyseImage(cameraID : int) -> bytearray:
     return bytearray(output)
 
 
-# 2 robot turn
-def detectHumanInteraction(cameraID : int) -> bool:
-    # Take a picture
-    camera = cv2.VideoCapture(cameraID, cv2.CAP_DSHOW)
-    _, referencePicture = camera.read()
+# 3 robot turn
+def detectHumanInteraction(referencePicture : np.ndarray, cameraID : int) -> bool:
+    # Resize referencePicture
     referencePicture : np.ndarray = cv2.resize(src = referencePicture, dsize = (400,300))
 
-    # Take new picture and compare it
-    while(True):
-        # if messageType: StopAnalysis -> break
-        _, newPicture = camera.read()
-        newPicture : np.ndarray = cv2.resize(src = newPicture, dsize = (400, 300))
+    # Take new picture
+    newPicture = getPicture(cameraID = cameraID)
+    newPicture : np.ndarray = cv2.resize(src = newPicture, dsize = (400, 300))
 
     # Comparison
     averageValuesRef = np.average(np.array([np.average(referencePicture[0]), np.average(referencePicture[1]), np.average(referencePicture[2])]))
     averageValueNew = np.average(np.array([np.average(newPicture[0]), np.average(newPicture[1]), np.average(newPicture[2])]))
     if (np.abs(averageValueNew - averageValuesRef) > 10):
-            # send messageType: UnexpectedInterference
-            camera.release()
-            return True
-    camera.release()
+        # send messageType: UnexpectedInterference
+        return True
