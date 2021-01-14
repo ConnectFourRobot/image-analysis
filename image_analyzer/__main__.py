@@ -67,7 +67,7 @@ def main(args):
                     time.sleep(secs = 0.5)
                     continue
         elif incomingMessage.messageType == NetworkMessageType.GameOver:
-            isRunning == False
+            isRunning = False
         else:
             continue
 
