@@ -142,6 +142,9 @@ def getCorners(lines):
                 if (point and validPoint(point)):
                     #if validPoint(point):
                     intersectionPoints.append(point)
+    if not intersectionPoints:
+        # Log for no intersections found
+        return False
 
     if len(intersectionPoints) == 0:
         print("No intersections detected")
@@ -197,7 +200,6 @@ def findTokens(sourceImage : np.ndarray, tokenColor : str) -> list:
 
     # Create a mask of the respective color
     mask : np.ndarray = getMask(image = sourceImageHSV, color = tokenColor)
-    # cv2.imshow("token"+tokenColor, mask)
 
     # Find contours and look for circles
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -216,7 +218,7 @@ def getGameBoard(shape : tuple, redTokens : list, yellowTokens : list):
     blockHeight = boardHeight / 6
 
     # Generate empty grid and then check if insert token of respective color
-    grid : np.ndarray = np.zeros(shape = (6, 7), dtype=np.int8)
+    grid : np.ndarray = np.zeros(shape = (6, 7), dtype = np.int8)
     for row in range(0, 6):
         for column in range(0, 7):
             point : tuple = (column * blockWidth + blockWidth / 2, (6 - row - 1) * blockHeight + blockHeight / 2)

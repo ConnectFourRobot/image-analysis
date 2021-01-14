@@ -1,26 +1,33 @@
 import numpy as np
 import argparse
 import sys
+import time
 
-from image_analyzer.image_functions import analyseImage, cameraCheck, detectHumanInteraction
+from image_analyzer.image_functions import analyseImage, cameraCheck, detectHumanInteraction, getPicture
 from image_analyzer.com.network.tcpClient import TcpClient
 from image_analyzer.com.network.networkMessageType import NetworkMessageType
 from image_analyzer.com.message import Message
 
 def main(args):
     # Connect to broker
-    broker : TcpClient = TcpClient(address=args.ip, port=args.port)
-
+    try:
+        broker : TcpClient = TcpClient(address=args.ip, port=args.port)
+    except:
+        # Log connection failed
+        sys.exit()
+    
     # Register with broker
-    broker.send(messageType = NetworkMessageType.Register, payload = bytearray([23]))
+    msgConfirm = broker.send(messageType = NetworkMessageType.Register, payload = bytearray([23]))
+    if not msgConfirm:
+        sys.exit()
 
     isRunning: bool = True
 
     # Check for open cameras
     cameraID = cameraCheck()
     if type(cameraID) == bool and not cameraID:
-        # Log for no open camera found
-        broker.send(messageType = NetworkMessageType.NoCameraFound, payload = bytearray([]))
+        # Log for no open camera found, no need for msgConfirm since sys.exit() is following anyways
+        broker.send(messageType = NetworkMessageType.NoCameraFound, payload = None)
         sys.exit()
 
     cameraID = 3
@@ -28,6 +35,8 @@ def main(args):
     while(isRunning == True):
         # Check for incoming message
         incomingMessage : Message = broker.read()
+        if type(incomingMessage) == bool and not incomingMessage:
+            sys.exit()
         if incomingMessage.messageType == NetworkMessageType.MakeImage:
             successFlag : bool = False
             for _ in range(10):
@@ -35,21 +44,29 @@ def main(args):
                 if type(payload) == bool and not payload:
                     continue
                 else:
-                    print(payload)
-                    broker.send(messageType = NetworkMessageType.SendImage, payload = payload)
+                    msgConfirm = broker.send(messageType = NetworkMessageType.SendImage, payload = payload)
+                    if not msgConfirm:
+                        sys.exit()
                     successFlag = True
                     break
             # Send Error after 10 tries
             if not successFlag:
-                broker.send(messageType = NetworkMessageType.Error, payload = bytearray([]))
+                msgConfirm = broker.send(messageType = NetworkMessageType.Error, payload = None)
+                if not msgConfirm:
+                    sys.exit()
         elif incomingMessage.messageType == NetworkMessageType.MonitorHumanInterference and args.hid:
-            # Perform function until broker tells IA to stop
+            # Make the reference picture
+            referencePicture = getPicture(cameraID = cameraID)
+            # Perform function until broker tells IA to stop, no need to msgConfirm here since it will be checked inside the loop
             while(broker.read().messageType != NetworkMessageType.StopAnalysis):
                 # Check if change in picture is bigger than treshold
-                if detectHumanInteraction(cameraID = cameraID):
+                if detectHumanInteraction(referencePicture = referencePicture, cameraID = cameraID):
                     # Send message to broker
-                    broker.send(messageType = NetworkMessageType.UnexpectedInterference, payload = bytearray([]))
+                    msgConfirm = broker.send(messageType = NetworkMessageType.UnexpectedInterference, payload = None)
+                    if not msgConfirm:
+                        sys.exit()
                 else:
+                    time.sleep(secs = 0.5)
                     continue
         elif incomingMessage.messageType == NetworkMessageType.GameOver:
             print('game has been terminated, by Arnie')
