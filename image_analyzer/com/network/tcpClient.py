@@ -12,6 +12,7 @@ class TcpClient:
             self.__socket.connect(server_address)
         except socket.error as e:
             # Log e.errno Error Number
+            pass
 
 
     def send(self, messageType: NetworkMessageType, payload: bytearray = None):
