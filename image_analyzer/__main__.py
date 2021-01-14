@@ -23,19 +23,25 @@ def main(args):
         broker.send(messageType = NetworkMessageType.NoCameraFound, payload = bytearray([]))
         sys.exit()
 
+    cameraID = 3
+
     while(isRunning == True):
         # Check for incoming message
         incomingMessage : Message = broker.read()
         if incomingMessage.messageType == NetworkMessageType.MakeImage:
+            successFlag : bool = False
             for _ in range(10):
                 payload : bytearray = analyseImage(cameraID = cameraID)
                 if type(payload) == bool and not payload:
                     continue
                 else:
+                    print(payload)
                     broker.send(messageType = NetworkMessageType.SendImage, payload = payload)
+                    successFlag = True
                     break
             # Send Error after 10 tries
-            broker.send(messageType = NetworkMessageType.Error, payload = bytearray([]))
+            if not successFlag:
+                broker.send(messageType = NetworkMessageType.Error, payload = bytearray([]))
         elif incomingMessage.messageType == NetworkMessageType.MonitorHumanInterference and args.hid:
             # Perform function until broker tells IA to stop
             while(broker.read().messageType != NetworkMessageType.StopAnalysis):
@@ -46,7 +52,8 @@ def main(args):
                 else:
                     continue
         elif incomingMessage.messageType == NetworkMessageType.GameOver:
-            isRunning == False
+            print('game has been terminated, by Arnie')
+            isRunning = False
         else:
             continue
 

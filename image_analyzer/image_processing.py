@@ -4,7 +4,7 @@ import numpy as np
 
 colorThresholds : dict = {
                 "blue" : [np.array([93, 90, 33]), np.array([141, 255, 222])],
-                "red" : [np.array([0, 73, 159]), np.array([10, 204, 253])],
+                "red" : [np.array([0, 73, 147]), np.array([9, 255, 253])],
                 "yellow" : [np.array([17, 58, 63]), np.array([40, 242, 255])]
                 }
 
@@ -19,8 +19,9 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
     contours, _ = cv2.findContours(image = mask, mode = cv2.RETR_TREE, method = cv2.CHAIN_APPROX_SIMPLE)    # check if RETR_LIST is better or other methods
                                                                                                             # check if grayscale is better than mask
 
-    if contours.empty():
+    if not contours:
         # Log for no contours found
+        print('no contours were found')
         return False
 
     # Calculate biggest contour
@@ -38,6 +39,7 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
     percentage = maxContourArea / (width * height) * 100
     if percentage < 20:                             #needs to be tested "better"
         # Log for board not found
+        print('to small to be the board')
         return False
     
     # Get a blank image with only the contours
@@ -47,8 +49,9 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
     # Get lines through HoughTransformation
     lines = cv2.HoughLines(image = contourImage, rho = 1, theta = np.pi / 180, threshold = 60)
 
-    if lines.empty():
+    if lines.size == 0:
         # Log for no HoughLines found
+        print('no lines found')
         return False
 
     # Calculate the coordinates of the found lines and append to list
@@ -72,6 +75,7 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
 
     if not corners:
         # Log not enough corners found
+        print('no corners found')
         return False
 
     cornersPicture = np.array([
@@ -106,7 +110,7 @@ def getIntersection(line_1 : tuple, line_2 : tuple):# -> tuple:
 
 # angle = acos(v1•v2)
 def validTheta(line1, line2) -> bool:
-    theta = np.arccos(np.dot(normalizeVector(np.array((line1[2] - line1[0], line1[3] - line1[1]), dtype=np.int16)), normalizeVector(np.array((line2[2] - line2[0], line2[3] - line2[1]), dtype=np.int16))))
+    theta = np.arccos(np.around(np.dot(normalizeVector(np.array((line1[2] - line1[0], line1[3] - line1[1]), dtype=np.int16)), normalizeVector(np.array((line2[2] - line2[0], line2[3] - line2[1]), dtype=np.int16))), decimals=2))
     return (np.pi/3 < theta < (3*np.pi)/4) or (5*np.pi/4 < theta < 5*np.pi/3) # noch Umrechnen
 
 def normalizeVector(v):
@@ -139,6 +143,10 @@ def getCorners(lines):
                     #if validPoint(point):
                     intersectionPoints.append(point)
 
+    if len(intersectionPoints) == 0:
+        print("No intersections detected")
+        return False
+
     # Get average point in between all intersections
     averagePoint = getAveragePoint(points = intersectionPoints)
 
@@ -164,6 +172,7 @@ def getCorners(lines):
     # Check if enough corners are found
     if ((not topLeftPoints) or (not topRightPoints) or (not bottomLeftPoints) or (not bottomRightPoints)):
         # Log not enough corners found
+        print('not enough corners in one of the corners found')
         return False
 
     # Distribute points to each respective corner
@@ -188,7 +197,7 @@ def findTokens(sourceImage : np.ndarray, tokenColor : str) -> list:
 
     # Create a mask of the respective color
     mask : np.ndarray = getMask(image = sourceImageHSV, color = tokenColor)
-    cv2.imshow("token"+tokenColor, mask)
+    # cv2.imshow("token"+tokenColor, mask)
 
     # Find contours and look for circles
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -207,7 +216,7 @@ def getGameBoard(shape : tuple, redTokens : list, yellowTokens : list):
     blockHeight = boardHeight / 6
 
     # Generate empty grid and then check if insert token of respective color
-    grid : np.ndarray = np.zeros(shape = (6, 7))
+    grid : np.ndarray = np.zeros(shape = (6, 7), dtype=np.int8)
     for row in range(0, 6):
         for column in range(0, 7):
             point : tuple = (column * blockWidth + blockWidth / 2, (6 - row - 1) * blockHeight + blockHeight / 2)

@@ -21,12 +21,14 @@ def cameraCheck() -> int:
 def analyseImage(cameraID : int) -> bytearray:
     # Create camera object and get a picture
     camera = cv2.VideoCapture(cameraID, cv2.CAP_DSHOW)
+    camera.open(cameraID)
     _, picture = camera.read()
     camera.release()
 
     # Return to main if picture is empty
-    if picture.empty():
+    if picture is None:
         # Log for empty picture
+        print('empty pictures')
         return False
 
     # Resize, colorshift, mask and project image
@@ -36,12 +38,14 @@ def analyseImage(cameraID : int) -> bytearray:
 
     if type(mask) == bool and not mask:
         # Log for mask error (color not found)
+        print('no mask found')
         return False
 
     projection : np.ndarray = getProjection(image = picture, mask = mask)
 
     if type(projection) == bool and not projection:
         # Log for projection error
+        print('Error in calculating the projection')
         return False
 
     # Calculate game tokens
