@@ -20,22 +20,16 @@ def cameraCheck() -> int:
         camera = cv2.VideoCapture(cam, cv2.CAP_DSHOW)
         camera.open()
 
-        successFlag : bool = False
         for _ in range(10):
             payload : bytearray = analyseImage(cameraID = cam)
             if type(payload) == bool and not payload:
                 continue
             else:
-                msgConfirm = broker.send(messageType = NetworkMessageType.SendImage, payload = payload)
-                if not msgConfirm:
-                    sys.exit()
-                successFlag = True
                 return cam
-        # Send Error after 10 tries
-        if not successFlag:
-            msgConfirm = broker.send(messageType = NetworkMessageType.Error, payload = None)
-            if not msgConfirm:
-                sys.exit()
+    
+    # No camera found that can find a board
+    return False
+    
 
 # 1 Get picture
 def getPicture(cameraID : int) -> np.ndarray:
