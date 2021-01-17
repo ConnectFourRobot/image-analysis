@@ -2,19 +2,40 @@ import cv2
 #from cv2 import cv2 # Visual Studio Code only, will be removed in final version
 import numpy as np
 from image_analyzer.image_processing import colorThresholds, findTokens, getGameBoard, getMask, getProjection
+import os
 
 # Handle all function calls in this file
 
 # 0 Check for open camera
 def cameraCheck() -> int:
-    for x in range(10):
-        camera = cv2.VideoCapture(x, cv2.CAP_DSHOW)
-        if camera is None or not camera.isOpened():
-            continue
-        elif camera.isOpened():
-            return x
-        else:
-            return False
+    path = "/dev/"
+    files = os.listdir(path)
+    cameraIdx = []
+
+    for file in files:
+        if file.startswith("video"):
+            cameraIdx.append(file.lstrip("video"))
+    
+    for cam in cameraIdx:
+        camera = cv2.VideoCapture(cam, cv2.CAP_DSHOW)
+        camera.open()
+
+        successFlag : bool = False
+        for _ in range(10):
+            payload : bytearray = analyseImage(cameraID = cam)
+            if type(payload) == bool and not payload:
+                continue
+            else:
+                msgConfirm = broker.send(messageType = NetworkMessageType.SendImage, payload = payload)
+                if not msgConfirm:
+                    sys.exit()
+                successFlag = True
+                return cam
+        # Send Error after 10 tries
+        if not successFlag:
+            msgConfirm = broker.send(messageType = NetworkMessageType.Error, payload = None)
+            if not msgConfirm:
+                sys.exit()
 
 # 1 Get picture
 def getPicture(cameraID : int) -> np.ndarray:
