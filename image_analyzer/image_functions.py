@@ -71,10 +71,25 @@ def detectHumanInteraction(referencePicture : np.ndarray, cameraID : int) -> boo
     # Take new picture
     newPicture = getPicture(cameraID = cameraID)
     newPicture : np.ndarray = cv2.resize(src = newPicture, dsize = (400, 300))
+    newPicture = newPicture[0:150, 0:400]
 
     # Comparison
-    averageValuesRef = np.average(np.array([np.average(referencePicture[0]), np.average(referencePicture[1]), np.average(referencePicture[2])]))
-    averageValueNew = np.average(np.array([np.average(newPicture[0]), np.average(newPicture[1]), np.average(newPicture[2])]))
-    if (np.abs(averageValueNew - averageValuesRef) > 10):
+    # Convert color scale to HSV
+    hsvim = cv2.cvtColor(pic, cv2.COLOR_BGR2HSV)
+
+    # Color boundaries for skin-tone
+    lower = np.array([0, 48, 80], dtype = "uint8")
+    upper = np.array([20, 255, 255], dtype = "uint8")
+
+    # Apply mask
+    skinRegionHSV = cv2.inRange(hsvim, lower, upper)
+    blurred = cv2.blur(skinRegionHSV, (2,2))
+    ret,thresh = cv2.threshold(blurred,0,255,cv2.THRESH_BINARY)
+
+    # Find contours
+    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours = max(contours, key=lambda x: cv2.contourArea(x))
+
+    if (cv2.contourArea(contours) > 500):
         # send messageType: UnexpectedInterference
         return True
