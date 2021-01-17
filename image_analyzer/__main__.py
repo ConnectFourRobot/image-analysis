@@ -58,7 +58,9 @@ def main(args):
             # Make the reference picture
             referencePicture = getPicture(cameraID = cameraID)
             # Perform function until broker tells IA to stop, no need to msgConfirm here since it will be checked inside the loop
-            while(broker.read().messageType != NetworkMessageType.StopAnalysis):
+            detectInteraction: bool = True
+            while(detectInteraction):
+                time.sleep(0.25)
                 # Check if change in picture is bigger than treshold
                 if detectHumanInteraction(referencePicture = referencePicture, cameraID = cameraID):
                     # Send message to broker
@@ -66,7 +68,22 @@ def main(args):
                     if not msgConfirm:
                         sys.exit()
                 else:
-                    time.sleep(secs = 0.5)
+                    msgConfirm = broker.send(messageType=NetworkMessageType.NoInteractionDetected, payload=None)
+                    if not msgConfirm:
+                        sys.exit()
+
+                msg: Message = broker.read()
+                if msg.messageType == NetworkMessageType.StopAnalysis:
+                    detectInteraction = False
+                    break
+                elif msg.messageType == NetworkMessageType.GameOver:
+                    detectInteraction = False
+                    isRunning = False
+                    break
+                elif msg.messageType == NetworkMessageType.CaptureInteractionHeartbeat:
+                    # do nothing
+                    continue
+                else:
                     continue
         elif incomingMessage.messageType == NetworkMessageType.GameOver:
             print('game has been terminated, by Arnie')

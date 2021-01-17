@@ -9,3 +9,6 @@ class NetworkMessageType(Enum):
     GameOver = 6
     NoCameraFound = 253
     Error = 254
+    NoInteractionDetected = 127
+    CaptureInteractionHeartbeat = 128
+
