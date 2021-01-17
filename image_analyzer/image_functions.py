@@ -75,7 +75,7 @@ def detectHumanInteraction(referencePicture : np.ndarray, cameraID : int) -> boo
 
     # Comparison
     # Convert color scale to HSV
-    hsvim = cv2.cvtColor(pic, cv2.COLOR_BGR2HSV)
+    hsvim = cv2.cvtColor(newPicture, cv2.COLOR_BGR2HSV)
 
     # Color boundaries for skin-tone
     lower = np.array([0, 48, 80], dtype = "uint8")
@@ -84,10 +84,10 @@ def detectHumanInteraction(referencePicture : np.ndarray, cameraID : int) -> boo
     # Apply mask
     skinRegionHSV = cv2.inRange(hsvim, lower, upper)
     blurred = cv2.blur(skinRegionHSV, (2,2))
-    ret,thresh = cv2.threshold(blurred,0,255,cv2.THRESH_BINARY)
+    _, thresh = cv2.threshold(blurred,0,255,cv2.THRESH_BINARY)
 
     # Find contours
-    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     contours = max(contours, key=lambda x: cv2.contourArea(x))
 
     if (cv2.contourArea(contours) > 500):
