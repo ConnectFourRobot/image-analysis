@@ -86,7 +86,6 @@ def main(args):
                 else:
                     continue
         elif incomingMessage.messageType == NetworkMessageType.GameOver:
-            print('game has been terminated, by Arnie')
             isRunning = False
         else:
             continue
