@@ -24,13 +24,11 @@ def main(args):
     isRunning: bool = True
 
     # Check for open cameras
-    cameraID = cameraCheck()
+    cameraID = 3
     if type(cameraID) == bool and not cameraID:
         # Log for no open camera found, no need for msgConfirm since sys.exit() is following anyways
         broker.send(messageType = NetworkMessageType.NoCameraFound, payload = None)
         sys.exit()
-
-    cameraID = 3
 
     while(isRunning == True):
         # Check for incoming message
@@ -54,7 +52,7 @@ def main(args):
                 msgConfirm = broker.send(messageType = NetworkMessageType.Error, payload = None)
                 if not msgConfirm:
                     sys.exit()
-        elif incomingMessage.messageType == NetworkMessageType.MonitorHumanInterference and args.hid:
+        elif incomingMessage.messageType == NetworkMessageType.MonitorHumanInterference and bool(args.hid):
             # Make the reference picture
             referencePicture = getPicture(cameraID = cameraID)
             # Perform function until broker tells IA to stop, no need to msgConfirm here since it will be checked inside the loop
