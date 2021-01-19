@@ -14,11 +14,11 @@ def cameraCheck() -> int:
 
     for file in files:
         if file.startswith("video"):
-            cameraIdx.append(file.lstrip("video"))
+            cameraIdx.append(int(file.lstrip("video")))
     
     for cam in cameraIdx:
         camera = cv2.VideoCapture(cam, cv2.CAP_DSHOW)
-        camera.open()
+        camera.open(cam)
 
         for _ in range(10):
             payload : bytearray = analyseImage(cameraID = cam)
