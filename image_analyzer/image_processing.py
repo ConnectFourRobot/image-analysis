@@ -1,6 +1,7 @@
 import cv2
 #from cv2 import cv2 # Visual Studio Code only, will be removed in final version
 import numpy as np
+from image_analyzer.ia_logging.ia_logger import loggingIt
 
 colorThresholds : dict = {
                 "blue" : [np.array([93, 90, 33]), np.array([141, 255, 222])],
@@ -21,7 +22,7 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
 
     if not contours:
         # Log for no contours found
-        print('no contours were found')
+        loggingIt("No contours were found.")
         return False
 
     # Calculate biggest contour
@@ -37,9 +38,9 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
     # Check if contour is big enough to be the board
     height, width = mask.shape
     percentage = maxContourArea / (width * height) * 100
-    if percentage < 20:                             #needs to be tested "better"
+    if percentage < 20:
         # Log for board not found
-        print('to small to be the board')
+        loggingIt("Contour is too small to be the board.")
         return False
     
     # Get a blank image with only the contours
@@ -51,7 +52,7 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
 
     if lines.size == 0:
         # Log for no HoughLines found
-        print('no lines found')
+        loggingIt("No HoughLines were found.")
         return False
 
     # Calculate the coordinates of the found lines and append to list
@@ -75,7 +76,7 @@ def getProjection(image : np.ndarray, mask : np.ndarray) -> np.ndarray:
 
     if not corners:
         # Log not enough corners found
-        print('no corners found')
+        loggingIt("No corners were found.")
         return False
 
     cornersPicture = np.array([
@@ -111,7 +112,7 @@ def getIntersection(line_1 : tuple, line_2 : tuple):# -> tuple:
 # angle = acos(v1•v2)
 def validTheta(line1, line2) -> bool:
     theta = np.arccos(np.around(np.dot(normalizeVector(np.array((line1[2] - line1[0], line1[3] - line1[1]), dtype=np.int16)), normalizeVector(np.array((line2[2] - line2[0], line2[3] - line2[1]), dtype=np.int16))), decimals=2))
-    return (np.pi/3 < theta < (3*np.pi)/4) or (5*np.pi/4 < theta < 5*np.pi/3) # noch Umrechnen
+    return (np.pi/3 < theta < (3*np.pi)/4) or (5*np.pi/4 < theta < 5*np.pi/3)
 
 def normalizeVector(v):
     return v/np.linalg.norm(v)
@@ -140,14 +141,10 @@ def getCorners(lines):
                 point = getIntersection(line_1 = line1, line_2 = line2)
                 # detect if out of bounds
                 if (point and validPoint(point)):
-                    #if validPoint(point):
                     intersectionPoints.append(point)
     if not intersectionPoints:
         # Log for no intersections found
-        return False
-
-    if len(intersectionPoints) == 0:
-        print("No intersections detected")
+        loggingIt("No intersections were found.")
         return False
 
     # Get average point in between all intersections
@@ -175,7 +172,7 @@ def getCorners(lines):
     # Check if enough corners are found
     if ((not topLeftPoints) or (not topRightPoints) or (not bottomLeftPoints) or (not bottomRightPoints)):
         # Log not enough corners found
-        print('not enough corners in one of the corners found')
+        loggingIt("Not enough points in one of the corners.")
         return False
 
     # Distribute points to each respective corner
