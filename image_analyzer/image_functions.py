@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from image_analyzer.image_processing import colorThresholds, findTokens, getGameBoard, getMask, getProjection
 import os
+from image_analyzer.ia_logging.ia_logger import loggingIt
 
 # Handle all function calls in this file
 
@@ -17,9 +18,6 @@ def cameraCheck() -> int:
             cameraIdx.append(int(file.lstrip("video")))
     
     for cam in cameraIdx:
-        camera = cv2.VideoCapture(cam, cv2.CAP_DSHOW)
-        camera.open(cam)
-
         for _ in range(10):
             payload : bytearray = analyseImage(cameraID = cam)
             if type(payload) == bool and not payload:
@@ -48,7 +46,7 @@ def analyseImage(cameraID : int) -> bytearray:
     # Return to main if picture is empty
     if picture is None:
         # Log for empty picture
-        print('empty pictures')
+        loggingIt("Empty picture found.")
         return False
 
     # Resize, colorshift, mask and project image
@@ -58,14 +56,14 @@ def analyseImage(cameraID : int) -> bytearray:
 
     if type(mask) == bool and not mask:
         # Log for mask error (color not found)
-        print('no mask found')
+        loggingIt("Mask is empty.")
         return False
 
     projection : np.ndarray = getProjection(image = picture, mask = mask)
 
     if type(projection) == bool and not projection:
         # Log for projection error
-        print('Error in calculating the projection')
+        loggingIt("Error in calculatin the projection.")
         return False
 
     # Calculate game tokens
