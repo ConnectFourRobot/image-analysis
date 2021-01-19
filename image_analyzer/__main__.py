@@ -7,18 +7,24 @@ from image_analyzer.image_functions import analyseImage, cameraCheck, detectHuma
 from image_analyzer.com.network.tcpClient import TcpClient
 from image_analyzer.com.network.networkMessageType import NetworkMessageType
 from image_analyzer.com.message import Message
+from image_analyzer.ia_logging.ia_logger import settingUp, loggingIt
 
 def main(args):
+    # Setting up the logger
+    settingUp()
+
     # Connect to broker
     try:
         broker : TcpClient = TcpClient(address=args.ip, port=args.port)
     except:
         # Log connection failed
+        loggingIt("Failed to connect to broker.")
         sys.exit()
     
     # Register with broker
     msgConfirm = broker.send(messageType = NetworkMessageType.Register, payload = bytearray([23]))
     if not msgConfirm:
+        loggingIt("Failed to send Register message to broker.")
         sys.exit()
 
     isRunning: bool = True
@@ -27,6 +33,7 @@ def main(args):
     cameraID = 3
     if type(cameraID) == bool and not cameraID:
         # Log for no open camera found, no need for msgConfirm since sys.exit() is following anyways
+        loggingIt("No open camera found.")
         broker.send(messageType = NetworkMessageType.NoCameraFound, payload = None)
         sys.exit()
 
@@ -44,6 +51,7 @@ def main(args):
                 else:
                     msgConfirm = broker.send(messageType = NetworkMessageType.SendImage, payload = payload)
                     if not msgConfirm:
+                        loggingIt("Failed to send SendImage message to broker.")
                         sys.exit()
                     successFlag = True
                     break
@@ -51,6 +59,7 @@ def main(args):
             if not successFlag:
                 msgConfirm = broker.send(messageType = NetworkMessageType.Error, payload = None)
                 if not msgConfirm:
+                    loggingIt("Failed to send Error message to broker.")
                     sys.exit()
         elif incomingMessage.messageType == NetworkMessageType.MonitorHumanInterference and bool(args.hid):
             # Make the reference picture
@@ -64,10 +73,12 @@ def main(args):
                     # Send message to broker
                     msgConfirm = broker.send(messageType = NetworkMessageType.UnexpectedInterference, payload = None)
                     if not msgConfirm:
+                        loggingIt("Failed to send UnexpectedInterference message to broker.")
                         sys.exit()
                 else:
                     msgConfirm = broker.send(messageType=NetworkMessageType.NoInteractionDetected, payload=None)
                     if not msgConfirm:
+                        loggingIt("Failed to send NoInteractionDetected message to broker.")
                         sys.exit()
 
                 msg: Message = broker.read()
