@@ -30,7 +30,7 @@ def main(args):
     isRunning: bool = True
 
     # Check for open cameras
-    cameraID = 3
+    cameraID = cameraCheck()
     if type(cameraID) == bool and not cameraID:
         # Log for no open camera found, no need for msgConfirm since sys.exit() is following anyways
         loggingIt("No open camera found.")
