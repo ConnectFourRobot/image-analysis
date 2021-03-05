@@ -1,4 +1,4 @@
-# Vier-Gewinnt-Roboter (Image-Analyis)
+# ConnectFourRobot (Image-Analyis)
 
 This service can take pictures of the robot, and evaluate them.
 
